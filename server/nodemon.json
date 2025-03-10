@@ -1,0 +1,10 @@
+{
+  "watch": ["*.js", "routes/", "services/", "models/", "utils/"],
+  "ignore": ["sessions/", "uploads/", "node_modules/"],
+  "ext": "js,json",
+  "delay": "2000",
+  "verbose": true,
+  "env": {
+    "NODE_ENV": "development"
+  }
+} 
