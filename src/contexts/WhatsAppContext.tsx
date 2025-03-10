@@ -329,6 +329,8 @@ export const WhatsAppProvider = ({ children }: { children: ReactNode }) => {
       setLoading(prev => ({ ...prev, tasks: true }));
       const tasks = await whatsappApi.getScheduledTasks();
       setScheduledTasks(tasks);
+      // Boş task listesi olsa bile bir flag ayarlıyoruz, böylece sürekli çağrılması önleniyor
+      localStorage.setItem('tasksChecked', 'true');
     } catch (error) {
       console.error('Error fetching scheduled tasks:', error);
       setError('Failed to fetch scheduled tasks');
@@ -510,7 +512,19 @@ export const WhatsAppProvider = ({ children }: { children: ReactNode }) => {
         
         // Zamanlanmış görevleri yükle
         if (scheduledTasks.length === 0 && !loading.tasks) {
-          fetchScheduledTasks();
+          // Eğer daha önce kontrol edilmediyse yükle
+          const tasksChecked = localStorage.getItem('tasksChecked') === 'true';
+          // Daha önce log yazıldı mı kontrolü
+          const tasksLogDisplayed = localStorage.getItem('tasksLogDisplayed') === 'true';
+          
+          if (!tasksChecked) {
+            console.log('Fetching scheduled tasks for the first time');
+            fetchScheduledTasks();
+          } else if (!tasksLogDisplayed) {
+            // Sadece bir kez log göster
+            console.log('Tasks already checked, skipping redundant API call');
+            localStorage.setItem('tasksLogDisplayed', 'true');
+          }
         }
         
         // Özel günleri yükle

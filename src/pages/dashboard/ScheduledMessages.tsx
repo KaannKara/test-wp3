@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Checkbox } from "../../components/ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/alert";
 import { Badge } from "../../components/ui/badge";
-import { AlertCircle, CheckCircle2, Trash2, Play, Calendar, FileText } from "lucide-react";
+import { AlertCircle, CheckCircle2, Trash2, Play, Calendar, FileText, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "../../lib/utils";
 
@@ -436,6 +436,14 @@ const ScheduledMessages = () => {
       }
     }
   };
+
+  // Component başında eklenecek fonksiyon (useWhatsApp çağrısından sonra)
+  const handleManualRefresh = () => {
+    // Localstorage'daki kontrol flag'ini temizle
+    localStorage.removeItem('tasksChecked');
+    // Yeniden veri yüklemeyi tetikle
+    fetchScheduledTasks();
+  };
   
   return (
     <DashboardLayout>
@@ -445,12 +453,24 @@ const ScheduledMessages = () => {
         initial="hidden"
         animate="visible"
       >
-        <motion.h1 
-          className="text-3xl font-bold mb-6 text-zinc-800 dark:text-zinc-100" 
-          variants={itemVariants}
-        >
-          Zamanlanmış Mesajlar
-        </motion.h1>
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-5 mt-5">
+          <motion.h1 
+            className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-50"
+            variants={itemVariants}
+          >
+            Zamanlanmış Mesajlar
+          </motion.h1>
+          
+          <Button 
+            onClick={handleManualRefresh}
+            variant="outline" 
+            size="sm"
+            className="mt-2 md:mt-0"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Yenile
+          </Button>
+        </div>
         
         {!connectionStatus || connectionStatus === 'disconnected' ? (
           <motion.div 
@@ -573,10 +593,10 @@ const ScheduledMessages = () => {
                               value={selectedDateField || ''}
                               onValueChange={setSelectedDateField}
                             >
-                              <SelectTrigger>
+                              <SelectTrigger className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
                                   <SelectValue placeholder="Tarih alanını seçin" />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 z-50">
                                 {selectedFileHeaders.map(header => (
                                   <SelectItem key={header} value={header}>
                                     {header}
@@ -985,47 +1005,46 @@ const ScheduledMessages = () => {
                             )}
 
                             {/* Tüm zamanlama türleri için bitiş tarihi kontrolü seçenekleri */}
-                              {scheduleType === 'expiry-date' && (
-                                <div className="p-4 border border-zinc-200 dark:border-zinc-700 rounded-md bg-zinc-50 dark:bg-zinc-800/70 mb-4">
-                                  <h3 className="font-medium text-zinc-800 dark:text-zinc-200 mb-3">Bitiş Tarihi Ayarları</h3>
-                                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-                                    Excel dosyasındaki kayıtlardan bitiş tarihi bugün olanları filtreleyip gönderir.
-                                  </p>
-                                  
-                                  <div className="space-y-4">
-                                    <div>
-                                      <Label htmlFor="expiryDateColumn" className="text-zinc-700 dark:text-zinc-300">Bitiş Tarihi Sütunu</Label>
-                                      <Select
-                                        value={expiryDateColumn || ''}
-                                        onValueChange={setExpiryDateColumn}
-                                      >
-                                        <SelectTrigger className="w-full bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
-                                          <SelectValue placeholder="Tarih sütunu seçin" />
+                              <div className="p-4 border border-zinc-200 dark:border-zinc-700 rounded-md bg-zinc-50 dark:bg-zinc-800/70 mb-4">
+                                <h3 className="font-medium text-zinc-800 dark:text-zinc-200 mb-3">Bitiş Tarihi Ayarları</h3>
+                                <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+                                  Excel dosyasındaki kayıtlardan bitiş tarihi bugün olanları filtreleyip gönderir.
+                                </p>
+                                
+                                <div className="space-y-4">
+                                  <div>
+                                    <Label htmlFor="expiryDateColumn" className="text-zinc-700 dark:text-zinc-300">Bitiş Tarihi Sütunu</Label>
+                                    <Select
+                                      value={expiryDateColumn || ''}
+                                      onValueChange={setExpiryDateColumn}
+                                    >
+                                      <SelectTrigger className="w-full bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
+                                        <SelectValue placeholder="Tarih sütunu seçin" />
                                       </SelectTrigger>
-                                        <SelectContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 z-50">
-                                          {selectedTaskFileHeaders.map(header => (
-                                            <SelectItem key={header} value={header}>{header}</SelectItem>
+                                      <SelectContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 z-50">
+                                        {selectedTaskFileHeaders.map(header => (
+                                          <SelectItem key={header} value={header}>{header}</SelectItem>
                                         ))}
                                       </SelectContent>
                                     </Select>
-              </div>
-              
-                                    <div>
-                                      <Label htmlFor="expiryDateFormat" className="text-zinc-700 dark:text-zinc-300">Tarih Formatı</Label>
-                                      <Select
-                                        value={expiryDateFormat}
-                                        onValueChange={setExpiryDateFormat}
-                                      >
-                                        <SelectTrigger className="w-full bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
-                                          <SelectValue placeholder="Format seçin" />
+                                  </div>
+                                  
+                                  <div>
+                                    <Label htmlFor="expiryDateFormat" className="text-zinc-700 dark:text-zinc-300">Tarih Formatı</Label>
+                                    <Select
+                                      value={expiryDateFormat}
+                                      onValueChange={setExpiryDateFormat}
+                                    >
+                                      <SelectTrigger className="w-full bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
+                                        <SelectValue placeholder="Format seçin" />
                                       </SelectTrigger>
-                                        <SelectContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 z-50">
-                                          <SelectItem value="DD.MM.YYYY">GG.AA.YYYY (30.01.2023)</SelectItem>
-                                          <SelectItem value="DD/MM/YYYY">GG/AA/YYYY (30/01/2023)</SelectItem>
-                                          <SelectItem value="DD-MM-YYYY">GG-AA-YYYY (30-01-2023)</SelectItem>
-                                          <SelectItem value="YYYY-MM-DD">YYYY-AA-GG (2023-01-30)</SelectItem>
-                                          <SelectItem value="YYYY/MM/DD">YYYY/AA/GG (2023/01/30)</SelectItem>
-                                          <SelectItem value="MM/DD/YYYY">AA/GG/YYYY (01/30/2023)</SelectItem>
+                                      <SelectContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 z-50">
+                                        <SelectItem value="DD.MM.YYYY">GG.AA.YYYY (30.01.2023)</SelectItem>
+                                        <SelectItem value="DD/MM/YYYY">GG/AA/YYYY (30/01/2023)</SelectItem>
+                                        <SelectItem value="DD-MM-YYYY">GG-AA-YYYY (30-01-2023)</SelectItem>
+                                        <SelectItem value="YYYY-MM-DD">YYYY-AA-GG (2023-01-30)</SelectItem>
+                                        <SelectItem value="YYYY/MM/DD">YYYY/AA/GG (2023/01/30)</SelectItem>
+                                        <SelectItem value="MM/DD/YYYY">AA/GG/YYYY (01/30/2023)</SelectItem>
                                       </SelectContent>
                                     </Select>
                                       <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
@@ -1033,64 +1052,64 @@ const ScheduledMessages = () => {
                                       </p>
                                     </div>
                                   </div>
-              </div>
-            )}
+                              </div>
+                            
             
-                              {/* Bitiş tarihi gruplandırma seçeneği */}
-                                  <div className="mb-4">
-                                <div className="flex items-center space-x-2">
-                                      <Checkbox 
-                                        id="groupByDate" 
-                                        checked={groupByDate}
-                                        onCheckedChange={(checked) => setGroupByDate(checked === true)}
-                                    className="border-zinc-300 dark:border-zinc-600"
-                                      />
-                                  <Label 
-                                    htmlFor="groupByDate" 
-                                    className="cursor-pointer text-zinc-700 dark:text-zinc-300"
-                                  >
-                                        Mesajları Bitiş Tarihine Göre Grupla
-                                      </Label>
-                                    </div>
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 ml-6">
-                                      Bu seçenek etkinleştirildiğinde, aynı bitiş tarihine sahip tüm mesajlar tek bir WhatsApp mesajı olarak gönderilir. Devre dışı bırakıldığında, her kayıt için ayrı mesaj gönderilir.
-                                    </p>
-                                  </div>
-                              
-                              {/* Günlük kontrol saati seçimi */}
-                              {(scheduleType !== 'expiry-date' && scheduleType !== 'daily') && (
+                            {/* Bitiş tarihi gruplandırma seçeneği */}
                                 <div className="mb-4">
-                                  <Label 
-                                    htmlFor="timeOfDay" 
-                                    className="text-zinc-700 dark:text-zinc-300"
-                                  >
-                                    Günlük Kontrol Saati
-                                  </Label>
-                                  <Select 
-                                    value={timeOfDay} 
-                                    onValueChange={setTimeOfDay}
-                                  >
-                                    <SelectTrigger className="w-full bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
-                                      <SelectValue placeholder="Saati seçin" />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 z-50">
-                                      {[...Array(24)].map((_, hour) => 
-                                        [0, 30].map(minute => (
-                                          <SelectItem 
-                                            key={`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`} 
-                                            value={`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`}
-                                          >
-                                            {`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`}
-                                          </SelectItem>
-                                        ))
-                                      ).flat()}
-                                    </SelectContent>
-                                  </Select>
-                                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                                    Bitiş tarihi kontrolleri belirlenen sıklıkla yapılacaktır.
+                              <div className="flex items-center space-x-2">
+                                    <Checkbox 
+                                      id="groupByDate" 
+                                      checked={groupByDate}
+                                      onCheckedChange={(checked) => setGroupByDate(checked === true)}
+                                  className="border-zinc-300 dark:border-zinc-600"
+                                    />
+                                <Label 
+                                  htmlFor="groupByDate" 
+                                  className="cursor-pointer text-zinc-700 dark:text-zinc-300"
+                                >
+                                      Mesajları Bitiş Tarihine Göre Grupla
+                                    </Label>
+                                  </div>
+                              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 ml-6">
+                                    Bu seçenek etkinleştirildiğinde, aynı bitiş tarihine sahip tüm mesajlar tek bir WhatsApp mesajı olarak gönderilir. Devre dışı bırakıldığında, her kayıt için ayrı mesaj gönderilir.
                                   </p>
-                            </div>
-                              )}
+                                </div>
+                            
+                            {/* Günlük kontrol saati seçimi */}
+                            {(scheduleType !== 'expiry-date' && scheduleType !== 'daily') && (
+                              <div className="mb-4">
+                                <Label 
+                                  htmlFor="timeOfDay" 
+                                  className="text-zinc-700 dark:text-zinc-300"
+                                >
+                                  Günlük Kontrol Saati
+                                </Label>
+                                <Select 
+                                  value={timeOfDay} 
+                                  onValueChange={setTimeOfDay}
+                                >
+                                  <SelectTrigger className="w-full bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
+                                    <SelectValue placeholder="Saati seçin" />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 z-50">
+                                    {[...Array(24)].map((_, hour) => 
+                                      [0, 30].map(minute => (
+                                        <SelectItem 
+                                          key={`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`} 
+                                          value={`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`}
+                                        >
+                                          {`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`}
+                                        </SelectItem>
+                                      ))
+                                    ).flat()}
+                                  </SelectContent>
+                                </Select>
+                                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                                  Bitiş tarihi kontrolleri belirlenen sıklıkla yapılacaktır.
+                                </p>
+                          </div>
+                            )}
                           </>
                         )}
             
